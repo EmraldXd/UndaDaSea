@@ -20,10 +20,19 @@ public class linearSlides {
 
 
     public void init(@NonNull OpMode opMode){
+        HardwareMap hardwareMap = opMode.hardwareMap;
+        telemetry = opMode.telemetry;
         //Initialize motors
-        rightSlide = hardwareMap.get(DcMotor.class, "RightSlide");
-        leftSlide = hardwareMap.get(DcMotor.class, "LeftSlide");
         angleMotor = hardwareMap.get(DcMotor.class, "AngleMotor");
+    }
+
+    /**
+     * This adds power to the motor that angles the slides.
+     * @param y is the y position of the player 2 left joystick
+     */
+    public void angMotorPower(double y){
+        y = -y;
+        angleMotor.setPower(y);
     }
 
     public void addPower(float leftStickY) {
@@ -50,11 +59,11 @@ public class linearSlides {
         return rotation;
     }
 
-    public void telemetry() {
-        telemetry.addData("Right Motor Power: ", df.format(rightSlide.getPower()));
-        telemetry.addData("Right Motor Position: ", df.format(ticksToInches(rightSlide.getCurrentPosition())));
-        telemetry.addData("Left Motor Power: ", df.format(leftSlide.getPower()));
-        telemetry.addData("Left Motor Position: ", df.format(ticksToInches(leftSlide.getCurrentPosition())));
+    public void telemetryOutput() {
+        //telemetry.addData("Right Motor Power: ", df.format(rightSlide.getPower()));
+        //telemetry.addData("Right Motor Position: ", df.format(ticksToInches(rightSlide.getCurrentPosition())));
+        //telemetry.addData("Left Motor Power: ", df.format(leftSlide.getPower()));
+        //telemetry.addData("Left Motor Position: ", df.format(ticksToInches(leftSlide.getCurrentPosition())));
         telemetry.addData("Angle Motor Power: ", df.format(angleMotor.getPower()));
         telemetry.addData("Angle Motor Position: ", df.format(Math.toDegrees(ticksToRadians(angleMotor.getCurrentPosition()))));
     }
