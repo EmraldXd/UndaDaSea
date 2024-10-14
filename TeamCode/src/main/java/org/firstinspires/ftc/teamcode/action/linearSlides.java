@@ -31,7 +31,6 @@ public class linearSlides {
      * @param y is the y position of the player 2 left joystick
      */
     public void angMotorPower(double y){
-        y = -y;
         angleMotor.setPower(y);
     }
 
