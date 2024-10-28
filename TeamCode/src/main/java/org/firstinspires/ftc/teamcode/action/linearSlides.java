@@ -6,17 +6,22 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.text.DecimalFormat;
+
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class linearSlides {
-
+    double MAX_POWER = .40;
     static final DecimalFormat df = new DecimalFormat("0.00");
     //Declare null
     DcMotor rightSlide;
     DcMotor leftSlide;
     DcMotor angleMotor;
     Telemetry telemetry;
+    DigitalChannel touchSensor;
     HardwareMap hardwareMap;
+    double lastMotorPower;
 
 
     public void init(@NonNull OpMode opMode){
@@ -24,6 +29,13 @@ public class linearSlides {
         telemetry = opMode.telemetry;
         //Initialize motors
         angleMotor = hardwareMap.get(DcMotor.class, "AngleMotor");
+        rightSlide = hardwareMap.get(DcMotor.class, "RightSlide");
+        leftSlide = hardwareMap.get(DcMotor.class, "LeftSlide");
+        //Initialize sensors
+        touchSensor = hardwareMap.get(DigitalChannel.class, "Touch Sensor");
+        //Set Motor Direction
+        rightSlide.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftSlide.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     /**
@@ -31,7 +43,19 @@ public class linearSlides {
      * @param y is the y position of the player 2 left joystick
      */
     public void angMotorPower(double y){
-        angleMotor.setPower(y * .25);
+        angleMotor.setPower(y * MAX_POWER);
+
+        if(y != 0) {
+            lastMotorPower = y * MAX_POWER;
+        }
+        if(y == 0 && lastMotorPower > 0 && touchSensor.getState()){
+            angleMotor.setPower(-0.05);
+        }
+    }
+
+    public void slidePower(double x) {
+        rightSlide.setPower(x);
+        leftSlide.setPower(x);
     }
 
     public void addPower(float leftStickY) {

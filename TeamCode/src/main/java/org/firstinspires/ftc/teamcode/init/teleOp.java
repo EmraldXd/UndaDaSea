@@ -28,6 +28,7 @@ public class teleOp extends OpMode {
         mecanumDrive.telemetryOutput();
         //Controls for linearSlides()
         linearSlides.angMotorPower(gamepad2.left_stick_y);
+        linearSlides.slidePower(gamepad2.right_stick_y);
         linearSlides.telemetryOutput();
     }
 }
