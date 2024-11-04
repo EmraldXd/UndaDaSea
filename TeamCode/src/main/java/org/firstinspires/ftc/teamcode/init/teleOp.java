@@ -5,15 +5,18 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.action.mecanumDrive;
 import org.firstinspires.ftc.teamcode.action.linearSlides;
+import org.firstinspires.ftc.teamcode.action.claw;
 @TeleOp (name = "MecanumDrive", group = "Main")
 public class teleOp extends OpMode {
     mecanumDrive mecanumDrive = new mecanumDrive();
     linearSlides linearSlides = new linearSlides();
+    claw claw = new claw();
     @Override
     public void init() {
         //Initialize our motors
         mecanumDrive.init(this);
         linearSlides.init(this);
+        claw.init(this);
     }
 
     public void start() {
@@ -27,8 +30,13 @@ public class teleOp extends OpMode {
         mecanumDrive.setPower(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
         mecanumDrive.telemetryOutput();
         //Controls for linearSlides()
-        linearSlides.angMotorPower(gamepad2.left_stick_y);
-        linearSlides.slidePower(gamepad2.right_stick_y);
+        linearSlides.angMotorPower(gamepad2.dpad_down, gamepad2.dpad_up);
+        linearSlides.slidePower(gamepad2.left_stick_y);
         linearSlides.telemetryOutput();
+        //Controls for claw();
+        claw.moveClaw(gamepad2.right_stick_y, gamepad2.a);
+        claw.useClaw(gamepad2.right_bumper);
+        claw.rotateClaw(gamepad2.left_bumper);
+
     }
 }

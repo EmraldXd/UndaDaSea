@@ -21,7 +21,6 @@ public class linearSlides {
     Telemetry telemetry;
     DigitalChannel touchSensor;
     HardwareMap hardwareMap;
-    double lastMotorPower;
 
 
     public void init(@NonNull OpMode opMode){
@@ -36,20 +35,27 @@ public class linearSlides {
         //Set Motor Direction
         rightSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         leftSlide.setDirection(DcMotorSimple.Direction.REVERSE);
+        angleMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
     /**
      * This adds power to the motor that angles the slides.
-     * @param y is the y position of the player 2 left joystick
+     * @param up keeps track of if the up button on the dPad is hit
+     * @param down keeps track of if the down button on the dPad is hit
      */
-    public void angMotorPower(double y){
+    public void angMotorPower(boolean up, boolean down){
+        double y;
+        boolean downLastPressed = false;
+        //Set booleans to double values to work the linear slides
+        y = (up ? 1 : 0) + (down ? -1 : 0);
         angleMotor.setPower(y * MAX_POWER);
-
-        if(y != 0) {
-            lastMotorPower = y * MAX_POWER;
+        if(down) {
+            downLastPressed = true;
+        } else if (up) {
+            downLastPressed = false;
         }
-        if(y == 0 && lastMotorPower > 0 && touchSensor.getState()){
-            angleMotor.setPower(-0.05);
+        if(downLastPressed && touchSensor.getState()){
+            angleMotor.setPower(0.05);
         }
     }
 
@@ -83,10 +89,8 @@ public class linearSlides {
     }
 
     public void telemetryOutput() {
-        //telemetry.addData("Right Motor Power: ", df.format(rightSlide.getPower()));
-        //telemetry.addData("Right Motor Position: ", df.format(ticksToInches(rightSlide.getCurrentPosition())));
-        //telemetry.addData("Left Motor Power: ", df.format(leftSlide.getPower()));
-        //telemetry.addData("Left Motor Position: ", df.format(ticksToInches(leftSlide.getCurrentPosition())));
+        telemetry.addData("Right Motor Power: ", df.format(rightSlide.getPower()));
+        telemetry.addData("Right Motor Position: ", df.format(ticksToInches(rightSlide.getCurrentPosition())));
         telemetry.addData("Angle Motor Power: ", df.format(angleMotor.getPower()));
         telemetry.addData("Angle Motor Position: ", df.format(Math.toDegrees(ticksToRadians(angleMotor.getCurrentPosition()))));
     }
