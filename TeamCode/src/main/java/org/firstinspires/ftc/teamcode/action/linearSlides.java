@@ -21,6 +21,13 @@ public class linearSlides {
     Telemetry telemetry;
     DigitalChannel touchSensor;
     HardwareMap hardwareMap;
+    double currentPosition;
+    double currentAngle;
+    double angleOffset;
+    boolean downLastPressed;
+    double MAX_FORWARD_DISTANCE = 3250; //Approximately max distance we can horizontally extend in ticks
+    double speedRatio;
+    double slidesPosition;
 
 
     public void init(@NonNull OpMode opMode){
@@ -36,6 +43,8 @@ public class linearSlides {
         rightSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         leftSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         angleMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        //Set angle motor offset
+        angleOffset = Math.abs(angleMotor.getCurrentPosition());
     }
 
     /**
@@ -45,53 +54,56 @@ public class linearSlides {
      */
     public void angMotorPower(boolean up, boolean down){
         double y;
-        boolean downLastPressed = false;
         //Set booleans to double values to work the linear slides
-        y = (up ? 1 : 0) + (down ? -1 : 0);
+        y = (up ? .5 : 0) + (down ? -.5 : 0);
         angleMotor.setPower(y * MAX_POWER);
         if(down) {
+            angleMotor.setPower(y);
             downLastPressed = true;
         } else if (up) {
+            angleMotor.setPower(y);
             downLastPressed = false;
         }
-        if(downLastPressed && touchSensor.getState()){
-            angleMotor.setPower(0.05);
+        if(downLastPressed && angleMotor.getPower() == 0){
+            angleMotor.setPower(0.1);
         }
     }
 
     public void slidePower(double x) {
-        rightSlide.setPower(x);
-        leftSlide.setPower(x);
-    }
-
-    public void addPower(float leftStickY) {
-        leftStickY = -leftStickY;
-    }
-
-    /**
-     * Does what you would expect. Takes the amount of ticks the motor has counted and translates
-     * that to a distance value in inches, better for telemetry.
-     * @param distance is how many ticks have been counted.
-     * @return returns the distance in inches.
-     */
-    public float ticksToInches(float distance) {
-        return distance;
+        slidesPosition = Math.abs(rightSlide.getCurrentPosition());
+        speedRatio = ((MAX_FORWARD_DISTANCE - slidesPosition) / 500);
+        if(rightSlide.getCurrentPosition() - 2750 < 0) {
+            rightSlide.setPower(x);
+            leftSlide.setPower(x);
+        } else {
+            rightSlide.setPower(x * speedRatio);
+            leftSlide.setPower(x * speedRatio);
+        }
     }
 
     /**
-     * Like, ticksToInches(), this will take the amount of ticks the motor have moved and translates
+     * This will take the amount of ticks the motor have moved and translates
      * it to radians, so we can calculate the farthest distance the linear slides can extend to.
      * @param rotation is how many ticks have been counted
      * @return returns the rotation in radians.
      */
-    public float ticksToRadians(float rotation) {
-        return rotation;
+    public double ticksToRadians(double rotation) {
+        if(!touchSensor.getState()){
+            currentPosition = 0;
+            angleOffset = Math.abs(rotation);
+        } else {
+            currentPosition = rotation - angleOffset;
+        }
+        currentAngle = Math.toRadians(90) * (currentPosition / 650);
+        return currentAngle;
     }
 
     public void telemetryOutput() {
         telemetry.addData("Right Motor Power: ", df.format(rightSlide.getPower()));
-        telemetry.addData("Right Motor Position: ", df.format(ticksToInches(rightSlide.getCurrentPosition())));
+        telemetry.addData("Right Motor Position: ", df.format(rightSlide.getCurrentPosition()));
         telemetry.addData("Angle Motor Power: ", df.format(angleMotor.getPower()));
-        telemetry.addData("Angle Motor Position: ", df.format(Math.toDegrees(ticksToRadians(angleMotor.getCurrentPosition()))));
+        telemetry.addData("Angle Motor Position: ", df.format(Math.toDegrees(ticksToRadians(angleMotor.getCurrentPosition()))) + " Degrees");
+        telemetry.addData("Offset: ", df.format(angleOffset));
+        telemetry.addData("Position: ", df.format(angleMotor.getCurrentPosition()));
     }
 }

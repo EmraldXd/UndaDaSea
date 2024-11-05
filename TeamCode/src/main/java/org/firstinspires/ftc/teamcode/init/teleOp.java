@@ -30,7 +30,7 @@ public class teleOp extends OpMode {
         mecanumDrive.setPower(gamepad1.left_stick_x, gamepad1.left_stick_y, gamepad1.right_stick_x);
         mecanumDrive.telemetryOutput();
         //Controls for linearSlides()
-        linearSlides.angMotorPower(gamepad2.dpad_down, gamepad2.dpad_up);
+        linearSlides.angMotorPower(gamepad2.dpad_up, gamepad2.dpad_down);
         linearSlides.slidePower(gamepad2.left_stick_y);
         linearSlides.telemetryOutput();
         //Controls for claw();

@@ -34,6 +34,8 @@ public class claw {
         isClosed = false;
         isTurned = false;
         clawToggle = false;
+        //Turn Servos on
+
     }
 
     public void startTime() {
