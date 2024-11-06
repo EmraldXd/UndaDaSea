@@ -26,6 +26,7 @@ public class linearSlides {
     double angleOffset;
     boolean downLastPressed;
     double MAX_FORWARD_DISTANCE = 3250; //Approximately max distance we can horizontally extend in ticks
+    double maxExtend;
     double speedRatio;
     double slidesPosition;
 
@@ -71,13 +72,14 @@ public class linearSlides {
 
     public void slidePower(double x) {
         slidesPosition = Math.abs(rightSlide.getCurrentPosition());
-        speedRatio = ((MAX_FORWARD_DISTANCE - slidesPosition) / 500);
-        if(rightSlide.getCurrentPosition() - 2750 < 0) {
+        maxExtend = Math.abs(MAX_FORWARD_DISTANCE / Math.cos(ticksToRadians(angleMotor.getCurrentPosition())));
+        speedRatio = ((maxExtend - slidesPosition) / 500);
+        if(slidesPosition - maxExtend < 0 || x > 0) {
             rightSlide.setPower(x);
             leftSlide.setPower(x);
         } else {
-            rightSlide.setPower(x * speedRatio);
-            leftSlide.setPower(x * speedRatio);
+            rightSlide.setPower(-x);
+            leftSlide.setPower(-x);
         }
     }
 
@@ -100,7 +102,8 @@ public class linearSlides {
 
     public void telemetryOutput() {
         telemetry.addData("Right Motor Power: ", df.format(rightSlide.getPower()));
-        telemetry.addData("Right Motor Position: ", df.format(rightSlide.getCurrentPosition()));
+        telemetry.addData("Right Motor Position: ", df.format(slidesPosition));
+        telemetry.addData("Max distance: ", maxExtend);
         telemetry.addData("Angle Motor Power: ", df.format(angleMotor.getPower()));
         telemetry.addData("Angle Motor Position: ", df.format(Math.toDegrees(ticksToRadians(angleMotor.getCurrentPosition()))) + " Degrees");
         telemetry.addData("Offset: ", df.format(angleOffset));
