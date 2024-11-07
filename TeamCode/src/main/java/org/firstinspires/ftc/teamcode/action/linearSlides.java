@@ -29,6 +29,8 @@ public class linearSlides {
     double maxExtend;
     double speedRatio;
     double slidesPosition;
+    double lastReadPosition;
+    double slidesOffset;
 
 
     public void init(@NonNull OpMode opMode){
@@ -44,8 +46,16 @@ public class linearSlides {
         rightSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         leftSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         angleMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //Set angle motor offset
         angleOffset = Math.abs(angleMotor.getCurrentPosition());
+        slidesOffset = Math.abs(rightSlide.getCurrentPosition());
+    }
+
+    public void setSlides() {
+        rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     /**
@@ -58,20 +68,16 @@ public class linearSlides {
         //Set booleans to double values to work the linear slides
         y = (up ? .5 : 0) + (down ? -.5 : 0);
         angleMotor.setPower(y * MAX_POWER);
-        if(down) {
+        if(down || up) {
             angleMotor.setPower(y);
-            downLastPressed = true;
-        } else if (up) {
-            angleMotor.setPower(y);
-            downLastPressed = false;
-        }
-        if(downLastPressed && angleMotor.getPower() == 0){
-            angleMotor.setPower(0.1);
+            downLastPressed = !downLastPressed;
+        } else if (angMotorFalling(Math.abs(angleMotor.getCurrentPosition())) && touchSensor.getState()){
+            angleMotor.setPower(0.2);
         }
     }
 
     public void slidePower(double x) {
-        slidesPosition = Math.abs(rightSlide.getCurrentPosition());
+        slidesPosition = Math.abs(rightSlide.getCurrentPosition()) - slidesOffset;
         maxExtend = Math.abs(MAX_FORWARD_DISTANCE / Math.cos(ticksToRadians(angleMotor.getCurrentPosition())));
         speedRatio = ((maxExtend - slidesPosition) / 500);
         if(slidesPosition - maxExtend < 0 || x > 0) {
@@ -100,9 +106,22 @@ public class linearSlides {
         return currentAngle;
     }
 
+    /**
+     * This will find if the angle motor is falling
+     */
+    public boolean angMotorFalling(double angleMotor) {
+        if(lastReadPosition == 0) {
+            lastReadPosition = Math.abs(angleMotor);
+        }
+        if(angleMotor - lastReadPosition < 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     public void telemetryOutput() {
         telemetry.addData("Right Motor Power: ", df.format(rightSlide.getPower()));
-        telemetry.addData("Right Motor Position: ", df.format(slidesPosition));
+        telemetry.addData("Right Motor Position: ", df.format(slidesPosition - slidesOffset));
         telemetry.addData("Max distance: ", maxExtend);
         telemetry.addData("Angle Motor Power: ", df.format(angleMotor.getPower()));
         telemetry.addData("Angle Motor Position: ", df.format(Math.toDegrees(ticksToRadians(angleMotor.getCurrentPosition()))) + " Degrees");

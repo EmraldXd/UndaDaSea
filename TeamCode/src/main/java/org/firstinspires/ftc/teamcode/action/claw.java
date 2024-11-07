@@ -15,7 +15,10 @@ public class claw {
     static final DecimalFormat df = new DecimalFormat("0.00");
     Telemetry telemetry;
     private double DELAY = 0.75;
-    private static final ElapsedTime elapsedTime = new ElapsedTime();
+    private static final ElapsedTime anglerDelay = new ElapsedTime();
+    private static final ElapsedTime delayToggle = new ElapsedTime();
+    private static final ElapsedTime delayClaw = new ElapsedTime();
+    private static final ElapsedTime jointDelay = new ElapsedTime();
     private Servo claw;
     private Servo clawJointA;
     private Servo clawJointB;
@@ -23,6 +26,7 @@ public class claw {
     private boolean isClosed;
     private boolean isTurned;
     private boolean clawToggle;
+    private boolean up;
     public void init(@NonNull OpMode opmode){
         HardwareMap hardwareMap = opmode.hardwareMap;
         telemetry = opmode.telemetry;
@@ -34,56 +38,63 @@ public class claw {
         isClosed = false;
         isTurned = false;
         clawToggle = false;
+        up = false;
         //Turn Servos on
 
     }
 
     public void startTime() {
-        elapsedTime.reset();
+        jointDelay.reset();
+        delayClaw.reset();
+        delayToggle.reset();
+        anglerDelay.reset();
     }
 
-    public void moveClaw(double x, boolean toggle) {
-        if(toggle && elapsedTime.time() > DELAY && !clawToggle) {
-            clawToggle = true;
-            elapsedTime.reset();
-        } else if (toggle && elapsedTime.time() > DELAY && clawToggle) {
-            clawToggle = false;
-            elapsedTime.reset();
+    public void moveClaw(boolean a, boolean b, boolean toggle) {
+        if(toggle && delayToggle.time() > DELAY) {
+            clawToggle = !clawToggle;
+            delayToggle.reset();
         }
-        if(!clawToggle) {
-            if (x > 0 && clawJointA.getPosition() < .55) {
-                clawJointA.setPosition(clawJointA.getPosition() + (x * .05));
-            } else if (x < 0 && clawJointA.getPosition() > .25) {
-                clawJointA.setPosition(clawJointA.getPosition() - (x * .05));
-            }
-        } else if (clawToggle) {
-            if (x > 0 && clawJointB.getPosition() < .67) {
-                clawJointB.setPosition(clawJointB.getPosition() + (x * .05));
-            } else if (x < 0 && clawJointB.getPosition() > 1) {
-                clawJointB.setPosition(clawJointB.getPosition() - (x * .05));
+            if (a && jointDelay.time() > DELAY) {
+                clawJointA.setPosition(up ? .4 : .3 );
+                clawJointB.setPosition(up ? .57 : .25);
+                up = !up;
+                jointDelay.reset();
             }
         }
-    }
 
     public void useClaw(boolean isPressed) {
-        if (isPressed && elapsedTime.time() > DELAY && !isClosed) {
-            claw.setPosition(0);
+        if (isPressed && delayClaw.time() > DELAY && !isClosed) {
+            claw.setPosition(0.2);
             isClosed = true;
-            elapsedTime.reset();
-        } else if (isPressed && elapsedTime.time() > DELAY && isClosed) {
-            claw.setPosition(0.8);
+            delayClaw.reset();
+        } else if (isPressed && delayClaw.time() > DELAY && isClosed) {
+            claw.setPosition(0.75);
             isClosed = false;
-            elapsedTime.reset();
+            delayClaw.reset();
         }
     }
 
-    public void rotateClaw(boolean isPressed) {
-        if(isPressed && elapsedTime.time() > DELAY && !isTurned) {
-            claw.setPosition(0);
+    public void rotateClaw(boolean isLeftPressed, boolean isRightPressed) {
+        if(isLeftPressed && anglerDelay.time() > DELAY) {
+            clawAngle.setPosition(0);
             isTurned = true;
-        } else if (isPressed && elapsedTime.time() > DELAY && isTurned){
-            claw.setPosition(0);
+            anglerDelay.reset();
+        } else if (isRightPressed && anglerDelay.time() > DELAY){
+            clawAngle.setPosition(0);
             isTurned = false;
+            anglerDelay.reset();
         }
+    }
+
+    public void showTelemetry() {
+        telemetry.addData("Elapsed time (claw): ", df.format(delayClaw.time()));
+        telemetry.addData("Elapsed time (joint): ", df.format(jointDelay.time()));
+        telemetry.addData("Elapsed time (angler): ", df.format(anglerDelay.time()));
+        telemetry.addData("Elapsed time (toggle): ", df.format(delayToggle.time()));
+        telemetry.addData("Claw Position: ", df.format(claw.getPosition()));
+        telemetry.addData("Joint A position: ", df.format(clawJointA.getPosition()));
+        telemetry.addData("Joint B position: ", df.format(clawJointB.getPosition()));
+        telemetry.addData("Angler Position: ", df.format(clawAngle.getPosition()));
     }
 }
