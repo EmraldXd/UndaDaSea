@@ -10,7 +10,7 @@ public class servoPro extends OpMode {
     Servo servo;
     @Override
     public void init() {
-        servo = hardwareMap.get(Servo.class, "Joint B");
+        servo = hardwareMap.get(Servo.class, "Angler");
     }
 
     @Override

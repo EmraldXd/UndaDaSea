@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.action.mecanumDrive;
+import org.firstinspires.ftc.teamcode.action.claw;
 
 @Autonomous(name = "ParkByTime", group = "Main")
 public class basicAuto extends OpMode {
@@ -14,6 +15,7 @@ public class basicAuto extends OpMode {
     public ElapsedTime autoRuntime = new ElapsedTime(); //How long autonomous has been doin' its thing for
     ElapsedTime actionRuntime = new ElapsedTime();
     org.firstinspires.ftc.teamcode.action.mecanumDrive mecanumDrive = new mecanumDrive();
+    org.firstinspires.ftc.teamcode.action.claw claw = new claw();
     //Our custom stuff to use here
     int robotAction = 0;
     boolean teamSelected = false;
@@ -23,6 +25,7 @@ public class basicAuto extends OpMode {
     public void init() {
         mecanumDrive.init(this);
         mecanumDrive.runWithoutEncoder();
+        claw.init(this);
     }
 
     public void start() {

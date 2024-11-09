@@ -31,6 +31,7 @@ public class linearSlides {
     double slidesPosition;
     double lastReadPosition;
     double slidesOffset;
+    boolean isStopped;
 
 
     public void init(@NonNull OpMode opMode){
@@ -48,6 +49,7 @@ public class linearSlides {
         angleMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        angleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //Set angle motor offset
         angleOffset = Math.abs(angleMotor.getCurrentPosition());
         slidesOffset = Math.abs(rightSlide.getCurrentPosition());
@@ -56,6 +58,8 @@ public class linearSlides {
     public void setSlides() {
         rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        angleMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        isStopped = false;
     }
 
     /**
@@ -72,7 +76,7 @@ public class linearSlides {
             angleMotor.setPower(y);
             downLastPressed = !downLastPressed;
         } else if (angMotorFalling(Math.abs(angleMotor.getCurrentPosition())) && touchSensor.getState()){
-            angleMotor.setPower(0.2);
+            angleMotor.setPower((Math.abs(rightSlide.getCurrentPosition()) > 2500) ? 0.6 : 0.2);
         }
     }
 
@@ -84,8 +88,8 @@ public class linearSlides {
             rightSlide.setPower(x);
             leftSlide.setPower(x);
         } else {
-            rightSlide.setPower(-x);
-            leftSlide.setPower(-x);
+            rightSlide.setPower(1);
+            leftSlide.setPower(1);
         }
     }
 
@@ -96,13 +100,15 @@ public class linearSlides {
      * @return returns the rotation in radians.
      */
     public double ticksToRadians(double rotation) {
-        if(!touchSensor.getState()){
-            currentPosition = 0;
-            angleOffset = Math.abs(rotation);
-        } else {
-            currentPosition = rotation - angleOffset;
+        if(!touchSensor.getState() && !isStopped){
+            angleMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            isStopped = true;
+        } else if(!touchSensor.getState() && isStopped) {
+            angleMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        } else if(isStopped) {
+            isStopped = false;
         }
-        currentAngle = Math.toRadians(90) * (currentPosition / 650);
+        currentAngle = Math.toRadians(90) * (rotation / 650);
         return currentAngle;
     }
 

@@ -38,9 +38,12 @@ public class claw {
         isClosed = false;
         isTurned = false;
         clawToggle = false;
-        up = false;
+        up = true;
         //Turn Servos on
-
+        clawAngle.setPosition(0);
+        clawJointA.setPosition(.3);
+        clawJointB.setPosition(.25);
+        claw.setPosition(.2);
     }
 
     public void startTime() {
@@ -77,11 +80,9 @@ public class claw {
 
     public void rotateClaw(boolean isLeftPressed, boolean isRightPressed) {
         if(isLeftPressed && anglerDelay.time() > DELAY) {
-            clawAngle.setPosition(0);
             isTurned = true;
             anglerDelay.reset();
         } else if (isRightPressed && anglerDelay.time() > DELAY){
-            clawAngle.setPosition(0);
             isTurned = false;
             anglerDelay.reset();
         }
