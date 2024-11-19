@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+
+import org.firstinspires.ftc.robotcontroller.external.samples.SensorTouch;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.text.DecimalFormat;
 
@@ -20,6 +22,7 @@ public class linearSlides {
     DcMotor angleMotor;
     Telemetry telemetry;
     DigitalChannel touchSensor;
+    DigitalChannel slideSensor;
     HardwareMap hardwareMap;
     double currentPosition;
     double currentAngle;
@@ -32,6 +35,7 @@ public class linearSlides {
     double lastReadPosition;
     double slidesOffset;
     boolean isStopped;
+    boolean slideStopped;
 
 
     public void init(@NonNull OpMode opMode){
@@ -43,6 +47,7 @@ public class linearSlides {
         leftSlide = hardwareMap.get(DcMotor.class, "LeftSlide");
         //Initialize sensors
         touchSensor = hardwareMap.get(DigitalChannel.class, "Touch Sensor");
+        slideSensor = hardwareMap.get(DigitalChannel.class, "Slide Sensor");
         //Set Motor Direction
         rightSlide.setDirection(DcMotorSimple.Direction.REVERSE);
         leftSlide.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -70,13 +75,11 @@ public class linearSlides {
     public void angMotorPower(boolean up, boolean down){
         double y;
         //Set booleans to double values to work the linear slides
-        y = (up ? .5 : 0) + (down ? -.5 : 0);
+        y = (up ? -1 : 0) + (down ? 1 : 0);
         angleMotor.setPower(y * MAX_POWER);
         if(down || up) {
             angleMotor.setPower(y);
             downLastPressed = !downLastPressed;
-        } else if (angMotorFalling(Math.abs(angleMotor.getCurrentPosition())) && touchSensor.getState()){
-            angleMotor.setPower((Math.abs(rightSlide.getCurrentPosition()) > 2500) ? 0.6 : 0.2);
         }
     }
 
@@ -84,12 +87,30 @@ public class linearSlides {
         slidesPosition = Math.abs(rightSlide.getCurrentPosition()) - slidesOffset;
         maxExtend = Math.abs(MAX_FORWARD_DISTANCE / Math.cos(ticksToRadians(angleMotor.getCurrentPosition())));
         speedRatio = ((maxExtend - slidesPosition) / 500);
-        if(slidesPosition - maxExtend < 0 || x > 0) {
-            rightSlide.setPower(x);
-            leftSlide.setPower(x);
-        } else {
-            rightSlide.setPower(1);
-            leftSlide.setPower(1);
+        if(slideSensor.getState()) {
+            if (slidesPosition - maxExtend < 0 || x > 0) {
+                rightSlide.setPower(x);
+                leftSlide.setPower(x);
+            } else {
+                rightSlide.setPower(1);
+                leftSlide.setPower(1);
+            }
+        } else if (!slideSensor.getState() && !slideStopped) {
+            rightSlide.setPower(0); //Stop the linear slides when they hit the button
+            rightSlide.setPower(0);
+            rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); //Reset the position for accurate measurement
+            leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            slideStopped = true;
+        } else if (slideStopped) {
+            rightSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); //Start the motors back up
+            leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            if(x < 0) {
+                rightSlide.setPower(x);
+                leftSlide.setPower(x);
+            }
+        }
+        if(x < 0) {
+            slideStopped = false;
         }
     }
 
@@ -108,7 +129,7 @@ public class linearSlides {
         } else if(isStopped) {
             isStopped = false;
         }
-        currentAngle = Math.toRadians(90) * (rotation / 650);
+        currentAngle = Math.toRadians(90) * (rotation / 4000);
         return currentAngle;
     }
 
@@ -131,7 +152,7 @@ public class linearSlides {
         telemetry.addData("Max distance: ", maxExtend);
         telemetry.addData("Angle Motor Power: ", df.format(angleMotor.getPower()));
         telemetry.addData("Angle Motor Position: ", df.format(Math.toDegrees(ticksToRadians(angleMotor.getCurrentPosition()))) + " Degrees");
-        telemetry.addData("Offset: ", df.format(angleOffset));
+        telemetry.addData("angle motor position: ", angleMotor.getCurrentPosition());
         telemetry.addData("Position: ", df.format(angleMotor.getCurrentPosition()));
     }
 }

@@ -20,7 +20,7 @@ public class claw {
     private static final ElapsedTime delayClaw = new ElapsedTime();
     private static final ElapsedTime jointDelay = new ElapsedTime();
     private Servo claw;
-    private Servo clawJointA;
+    private Servo clawJoint; //used to be ClawJointA
     private Servo clawJointB;
     private Servo clawAngle;
     private boolean isClosed;
@@ -32,8 +32,8 @@ public class claw {
         telemetry = opmode.telemetry;
         //initialize servo motors
         claw = hardwareMap.get(Servo.class, "Claw");
-        clawJointA = hardwareMap.get(Servo.class, "Joint A");
-        clawJointB = hardwareMap.get(Servo.class, "Joint B");
+        clawJoint = hardwareMap.get(Servo.class, "Joint"); //used to be known as Claw Joint A
+        //clawJointB = hardwareMap.get(Servo.class, "Joint B");
         clawAngle = hardwareMap.get(Servo.class, "Angler");
         isClosed = false;
         isTurned = false;
@@ -41,8 +41,7 @@ public class claw {
         up = true;
         //Turn Servos on
         clawAngle.setPosition(0);
-        clawJointA.setPosition(.3);
-        clawJointB.setPosition(.25);
+        clawJoint.setPosition(0);
         claw.setPosition(.2);
     }
 
@@ -59,8 +58,7 @@ public class claw {
             delayToggle.reset();
         }
             if (a && jointDelay.time() > DELAY) {
-                clawJointA.setPosition(up ? .4 : .3 );
-                clawJointB.setPosition(up ? .57 : .25);
+                clawJoint.setPosition(up ? .15 : 0 );
                 up = !up;
                 jointDelay.reset();
             }
@@ -68,7 +66,7 @@ public class claw {
 
     public void useClaw(boolean isPressed) {
         if (isPressed && delayClaw.time() > DELAY && !isClosed) {
-            claw.setPosition(0.2);
+            claw.setPosition(0.3);
             isClosed = true;
             delayClaw.reset();
         } else if (isPressed && delayClaw.time() > DELAY && isClosed) {
@@ -80,9 +78,11 @@ public class claw {
 
     public void rotateClaw(boolean isLeftPressed, boolean isRightPressed) {
         if(isLeftPressed && anglerDelay.time() > DELAY) {
+            clawAngle.setPosition(0.3);
             isTurned = true;
             anglerDelay.reset();
         } else if (isRightPressed && anglerDelay.time() > DELAY){
+            clawAngle.setPosition(0);
             isTurned = false;
             anglerDelay.reset();
         }
@@ -94,8 +94,7 @@ public class claw {
         telemetry.addData("Elapsed time (angler): ", df.format(anglerDelay.time()));
         telemetry.addData("Elapsed time (toggle): ", df.format(delayToggle.time()));
         telemetry.addData("Claw Position: ", df.format(claw.getPosition()));
-        telemetry.addData("Joint A position: ", df.format(clawJointA.getPosition()));
-        telemetry.addData("Joint B position: ", df.format(clawJointB.getPosition()));
+        telemetry.addData("Joint A position: ", df.format(clawJoint.getPosition()));
         telemetry.addData("Angler Position: ", df.format(clawAngle.getPosition()));
     }
 }
