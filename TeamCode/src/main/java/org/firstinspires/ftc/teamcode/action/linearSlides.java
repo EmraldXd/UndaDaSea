@@ -36,6 +36,9 @@ public class linearSlides {
     double slidesOffset;
     boolean isStopped;
     boolean slideStopped;
+    boolean request;
+    double lastPower;
+    double currentPower;
 
 
     public void init(@NonNull OpMode opMode){
@@ -65,6 +68,7 @@ public class linearSlides {
         leftSlide.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         angleMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         isStopped = false;
+        request = false;
     }
 
     /**
@@ -130,11 +134,30 @@ public class linearSlides {
             isStopped = false;
         }
         currentAngle = Math.toRadians(90) * (rotation / 4000);
-        return currentAngle;
+        return Math.abs(currentAngle);
     }
 
     public boolean liftTime() {
         return Math.abs(rightSlide.getCurrentPosition()) < 1500;
+    }
+
+    public void goToSpecimen(boolean pressed, boolean cancel){
+        if(pressed) {
+            request = true;
+        } else if (cancel) {
+            request = false;
+        }
+        if(request) {
+            if (ticksToRadians(angleMotor.getCurrentPosition()) < Math.toRadians(50)) {
+                angleMotor.setPower(-1);
+            } else if(lastPower < currentPower || lastPower > currentPower) {
+                request = false;
+            } else {
+                angleMotor.setPower(1);
+            }
+        }
+        lastPower = currentPower;
+        currentPower = angleMotor.getPower();
     }
 
     /**
