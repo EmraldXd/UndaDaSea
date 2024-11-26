@@ -89,8 +89,8 @@ public class linearSlides {
         speedRatio = ((maxExtend - slidesPosition) / 500);
         if(slideSensor.getState()) {
             if (slidesPosition - maxExtend < 0 || x > 0) {
-                rightSlide.setPower(x);
-                leftSlide.setPower(x);
+                rightSlide.setPower((Math.abs(rightSlide.getCurrentPosition()) < 1250 && x > 0) ? 0.5 * x : x);
+                leftSlide.setPower((Math.abs(rightSlide.getCurrentPosition()) < 1250 && x > 0) ? 0.5 * x : x); //We change the linear slide speed as it approaches the button to avoid physical damage
             } else {
                 rightSlide.setPower(1);
                 leftSlide.setPower(1);
@@ -133,19 +133,26 @@ public class linearSlides {
         return currentAngle;
     }
 
+    public boolean liftTime() {
+        return Math.abs(rightSlide.getCurrentPosition()) < 1500;
+    }
+
     /**
-     * This will find if the angle motor is falling
+     * This was used to find if the angle motor was following when using bevel gears before we swapped
+     * to a worm gear. This would prevent us from getting penalized by giving the linear slides a
+     * chance to autonomously retract.
      */
-    public boolean angMotorFalling(double angleMotor) {
-        if(lastReadPosition == 0) {
+    /*public boolean angMotorFalling(double angleMotor) {
+        if (lastReadPosition == 0) {
             lastReadPosition = Math.abs(angleMotor);
         }
-        if(angleMotor - lastReadPosition < 0) {
+        if (angleMotor - lastReadPosition < 0) {
             return true;
         } else {
             return false;
         }
-    }
+    } */
+
     public void telemetryOutput() {
         telemetry.addData("Right Motor Power: ", df.format(rightSlide.getPower()));
         telemetry.addData("Right Motor Position: ", df.format(slidesPosition - slidesOffset));
