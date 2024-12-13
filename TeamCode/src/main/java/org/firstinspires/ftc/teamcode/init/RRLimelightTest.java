@@ -1,43 +1,34 @@
 package org.firstinspires.ftc.teamcode.init;
 
-import androidx.annotation.NonNull;
-
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
-import com.qualcomm.hardware.limelightvision.LLStatus;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 
-import org.firstinspires.ftc.teamcode.action.mecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
-@TeleOp(name = "limelightTest", group = "Main")
-public class LimelightTest extends OpMode{
-    org.firstinspires.ftc.teamcode.action.mecanumDrive mecanumDrive = new mecanumDrive();
+@TeleOp
+public class RRLimelightTest extends OpMode {
+    boolean autoFinished;
+    SampleMecanumDrive drive;
     String current;
     Limelight3A limelight;
+    TrajectorySequence path;
+    @Override
     public void init() {
+        drive = new SampleMecanumDrive(hardwareMap);
+
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (100 times per second)
         limelight.start(); // This tells Limelight to start looking!
-
-        mecanumDrive.init(this);
+        limelight.pipelineSwitch(0);
     }
 
     @Override
     public void loop() {
-        if(gamepad1.b) {
-            limelight.pipelineSwitch(0);
-            current = "Red";
-        } else if (gamepad1.y) {
-            limelight.pipelineSwitch(1);
-            current = "Yellow";
-        } else if (gamepad1.x) {
-            limelight.pipelineSwitch(3);
-            current = "Blue";
-        }
-
         LLResult result = limelight.getLatestResult();
         if (result != null && result.isValid()) {
             double tx = result.getTx(); // How far left or right the target is (degrees)
@@ -45,17 +36,13 @@ public class LimelightTest extends OpMode{
             double ta = result.getTa(); // How big the target looks (0%-100% of the image)
 
             if(tx > 8) {
-                mecanumDrive.setPower(0, 0, .5);
+                drive.turn(drive.getExternalHeading() + 5);
             } else if (tx < -8) {
-                mecanumDrive.setPower(0, 0, -.5);
-            } else {
-                mecanumDrive.setPower(0, 0, 0);
+                drive.turn(drive.getExternalHeading() - 5);
             }
 
             if(ta < 2.5) {
-                mecanumDrive.setPower(0, 0, 0);
             } else {
-                mecanumDrive.setPower(0, 0, 0);
             }
 
             telemetry.addData("Target X", tx);
@@ -65,4 +52,9 @@ public class LimelightTest extends OpMode{
             telemetry.addData("Limelight", "No Targets");
         }
     }
+
+    public void trajectoryFinished() {
+        autoFinished = true;
+    }
+
 }
