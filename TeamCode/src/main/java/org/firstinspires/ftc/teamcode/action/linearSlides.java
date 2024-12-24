@@ -138,7 +138,7 @@ public class linearSlides {
     }
 
     public boolean liftTime() {
-        return Math.abs(rightSlide.getCurrentPosition()) < 1500;
+        return Math.abs(rightSlide.getCurrentPosition()) < 1750;
     }
 
     public void goToSpecimen(boolean pressed, boolean cancel){

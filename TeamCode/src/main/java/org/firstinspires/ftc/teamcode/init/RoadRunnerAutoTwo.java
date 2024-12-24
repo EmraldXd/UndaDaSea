@@ -14,42 +14,41 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 @Autonomous (name = "Colored Auto")
 public class RoadRunnerAutoTwo extends OpMode {
     org.firstinspires.ftc.teamcode.action.linearSlides linearSlides = new linearSlides();
-    org.firstinspires.ftc.teamcode.action.claw claw = new claw();
     ElapsedTime actionRuntime = new ElapsedTime();
     ElapsedTime autoRuntime = new ElapsedTime();
     TrajectorySequence blue;
     SampleMecanumDrive drive;
     boolean unrun;
-    double offsetX = -12.98;
-    double offsetY = 62.06;
+    double offsetY = 12.98;
+    double offsetX = 62.06;
     double offsetHead = 0;
 
     public void init() {
         linearSlides.init(this);
-        claw.init(this);
 
-        drive = new SampleMecanumDrive(hardwareMap);
+        Pose2d initialPose = new Pose2d(-12.98, 62.06, Math.toRadians(90.00));
+        drive = new SampleMecanumDrive(hardwareMap, initialPose);
     }
 
     public void start() {
-        blue = drive.trajectorySequenceBuilder(new Pose2d(12.98 + offsetX, -62.06 + offsetY, Math.toRadians(90.00 + offsetHead)))
-                .splineTo(new Vector2d(-1.85 + offsetX, -34.04 + offsetY), Math.toRadians(90.00 + offsetHead))
-                .lineToSplineHeading(new Pose2d(24.99 + offsetX, -53.17 + offsetY, Math.toRadians(-0.78 + offsetHead)))
-                .lineTo(new Vector2d(36.41 + offsetX, -37.30 + offsetY))
-                .lineTo(new Vector2d(36.70 + offsetX, -12.09 + offsetY))
-                .lineTo(new Vector2d(48.87 + offsetX, -12.83 + offsetY))
-                .lineTo(new Vector2d(49.16 + offsetX, -51.53 + offsetY))
-                .lineTo(new Vector2d(48.57 + offsetX, -9.71 + offsetY))
-                .lineTo(new Vector2d(56.28 + offsetX, -11.20 + offsetY))
-                .lineTo(new Vector2d(59.39 + offsetX, -51.39 + offsetY))
-                .splineToSplineHeading(new Pose2d(34.33 + offsetX, -60.14 + offsetY, Math.toRadians(268.25 + offsetHead)), Math.toRadians(268.25 + offsetHead))
-                .splineTo(new Vector2d(1.11 + offsetX, -34.04 + offsetY), Math.toRadians(90.00 + offsetHead))
-                .lineTo(new Vector2d(39.23 + offsetX, -38.93 + offsetY))
-                .lineTo(new Vector2d(62.81 + offsetX, -10.01 + offsetY))
-                .lineTo(new Vector2d(62.95 + offsetX, -52.42 + offsetY))
-                .splineToSplineHeading(new Pose2d(36.56 + offsetX, -59.00 + offsetY, Math.toRadians(251.57 + offsetHead)), Math.toRadians(-90.00 + offsetHead))
-                .splineTo(new Vector2d(3.78 + offsetX, -33.59 + offsetY), Math.toRadians(86.50 + offsetHead))
-                .lineTo(new Vector2d(56.43 + offsetX, -58.21 + offsetY))
+        blue = drive.trajectorySequenceBuilder(new Pose2d(-12.98, 62.06, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(-34.04, 1.85), Math.toRadians(90.00))
+                .lineToSplineHeading(new Pose2d(53.17, 24.99, Math.toRadians(-0.78)))
+                .lineTo(new Vector2d(37.30, 36.41))
+                .lineTo(new Vector2d(12.09, 36.70))
+                .lineTo(new Vector2d(12.83, 48.87))
+                .lineTo(new Vector2d(51.53, 49.16))
+                .lineTo(new Vector2d(9.71, 48.57))
+                .lineTo(new Vector2d(11.20, 56.28))
+                .lineTo(new Vector2d(51.39, 59.39))
+                .splineToSplineHeading(new Pose2d(60.14, 34.33, Math.toRadians(268.25)), Math.toRadians(268.25))
+                .splineTo(new Vector2d(34.04, 1.11), Math.toRadians(90.00))
+                .lineTo(new Vector2d(38.93, 39.23))
+                .lineTo(new Vector2d(10.01, 2.81))
+                .lineTo(new Vector2d(52.42, 62.95))
+                .splineToSplineHeading(new Pose2d(59.00, 36.56, Math.toRadians(251.57)), Math.toRadians(-90.00))
+                .splineTo(new Vector2d(33.59, 3.78), Math.toRadians(86.50))
+                .lineTo(new Vector2d(58.21, 56.43))
                 .build();
 
 
